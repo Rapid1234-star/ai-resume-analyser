@@ -40,18 +40,20 @@ const upload = () => {
       return setStatusText("Error uploading file");
     }
 
-    setStatusText("Converting to image...");
+    setStatusText("Converting to image and extracting text...");
 
-    const imageFile = await convertPdfToImage(file);
+    const conversionResult = await convertPdfToImage(file);
 
-    if (!imageFile || !imageFile.file) {
+    if (!conversionResult || !conversionResult.file || !conversionResult.text) {
       setIsProcessing(false);
-      return setStatusText("Error converting to image");
+      return setStatusText("Error converting to image or extracting text");
     }
+
+    const { file: imageFile, text: resumeText } = conversionResult;
 
     setStatusText("Uploading the image...");
 
-    const uploadedImage = await fs.upload([imageFile.file]);
+    const uploadedImage = await fs.upload([imageFile]);
 
     if (!uploadedImage) {
       setIsProcessing(false);
@@ -76,7 +78,7 @@ const upload = () => {
     setStatusText("Analyzing...");
 
     const feedback = await ai.feedback(
-      uploadedFile.path,
+      resumeText,
       prepareInstructions({ jobTitle, jobDescription })
     );
     if (!feedback) {

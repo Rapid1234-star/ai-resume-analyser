@@ -1,6 +1,7 @@
 export interface PdfConversionResult {
   imageUrl: string;
   file: File | null;
+  text?: string;
   error?: string;
 }
 
@@ -35,6 +36,14 @@ export async function convertPdfToImage(
     const pdf = await lib.getDocument({ data: arrayBuffer }).promise;
     const page = await pdf.getPage(1);
 
+    // Extract text
+    const textContent = await page.getTextContent();
+    const text = textContent.items
+      .map((item: any) => item.str)
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
+
     const viewport = page.getViewport({ scale: 4 });
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d");
@@ -62,11 +71,13 @@ export async function convertPdfToImage(
             resolve({
               imageUrl: URL.createObjectURL(blob),
               file: imageFile,
+              text,
             });
           } else {
             resolve({
               imageUrl: "",
               file: null,
+              text,
               error: "Failed to create image blob",
             });
           }

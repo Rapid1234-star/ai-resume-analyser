@@ -73,7 +73,7 @@ interface PuterStore {
       options?: PuterChatOptions
     ) => Promise<AIResponse | undefined>;
     feedback: (
-      path: string,
+      text: string,
       message: string
     ) => Promise<AIResponse | undefined>;
     img2txt: (
@@ -327,31 +327,9 @@ export const usePuterStore = create<PuterStore>((set, get) => {
     >;
   };
 
-  const feedback = async (path: string, message: string) => {
-    const puter = getPuter();
-    if (!puter) {
-      setError("Puter.js not available");
-      return;
-    }
-
-    return puter.ai.chat(
-      [
-        {
-          role: "user",
-          content: [
-            {
-              type: "file",
-              puter_path: path,
-            },
-            {
-              type: "text",
-              text: message,
-            },
-          ],
-        },
-      ],
-      { model: "claude-sonnet-4" }
-    ) as Promise<AIResponse | undefined>;
+  const feedback = async (text: string, message: string) => {
+    const { analyzeResume } = await import("./groq");
+    return analyzeResume(text, message);
   };
 
   const img2txt = async (image: string | File | Blob, testMode?: boolean) => {
@@ -438,7 +416,7 @@ export const usePuterStore = create<PuterStore>((set, get) => {
         testMode?: boolean,
         options?: PuterChatOptions
       ) => chat(prompt, imageURL, testMode, options),
-      feedback: (path: string, message: string) => feedback(path, message),
+      feedback: (text: string, message: string) => feedback(text, message),
       img2txt: (image: string | File | Blob, testMode?: boolean) =>
         img2txt(image, testMode),
     },
