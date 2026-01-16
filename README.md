@@ -20,8 +20,6 @@
   * 🗂️ Project Structure
 * 🚢 Deployment
 * 🤝 Contributing
-* 📜 License
-
 ---
 
 ## ✨ Features
