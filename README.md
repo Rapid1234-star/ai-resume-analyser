@@ -20,6 +20,7 @@
   * 🗂️ Project Structure
 * 🚢 Deployment
 * 🤝 Contributing
+
 ---
 
 ## ✨ Features
@@ -98,26 +99,34 @@ npm run dev
 
 ### 🔑 Environment Variables
 
-Resumind requires a **Groq API key** to perform AI-based resume analysis.
+Resumind requires a **Groq AI API key** to perform AI-based resume analysis.
 
-Create a `.env` file in the project root and add:
+An example environment file is already provided as **`.env.example`**.
+
+#### 📄 `.env.example`
 
 ```env
+# Groq AI API Key
+# Get your API key from: https://console.groq.com/keys
 VITE_GROQ_API_KEY=your_groq_api_key_here
 ```
+
+#### 🛠️ Setup Instructions
+
+1. Copy the example file:
+
+```bash
+cp .env.example .env
+```
+
+2. Replace `your_groq_api_key_here` with your actual Groq API key
 
 #### 📌 Important Notes
 
 * ⚠️ Never commit your `.env` file
 * ✅ Ensure `.env` is included in `.gitignore`
 * 🔄 Restart the dev server after changing environment variables
-* 🧪 Vite requires all client-side env variables to start with `VITE_`
-
-#### 🛡️ Example `.gitignore` Entry
-
-```gitignore
-.env
-```
+* 🧪 Vite requires all client-side environment variables to be prefixed with `VITE_`
 
 ---
 
@@ -177,16 +186,23 @@ constants/              # App-wide constants
 Build and run the app using Docker:
 
 ```bash
+# Build the Docker image
 docker build -t resumind .
-docker run -p 3000:3000 resumind
+
+# Run the container with your API key
+docker run -p 3000:3000 -e VITE_GROQ_API_KEY=your_actual_api_key_here resumind
 ```
 
-The container can be deployed on:
+**Important:** Always provide the `VITE_GROQ_API_KEY` environment variable when running the container.
 
-* AWS ECS
-* Google Cloud Run
-* Azure Container Apps
+Supported platforms:
+
+* AWS ECS (environment variables in task definition)
+* Google Cloud Run (service configuration)
+* Azure Container Apps (container settings)
 * Any Docker-compatible platform
+
+🔐 For production deployments, use a **secret management service** to store your API key securely.
 
 ---
 
@@ -205,6 +221,3 @@ npm run build
 ## 🤝 Contributing
 
 Contributions are welcome! 🎉
-Feel free to open issues or submit a **Pull Request**.
-
----

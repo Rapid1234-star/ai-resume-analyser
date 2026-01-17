@@ -1,8 +1,7 @@
 import Groq from "groq-sdk";
 
 const groq = new Groq({
-  apiKey: "dummy-key", // Not used - header set by Vite proxy
-  baseURL: "http://localhost:5173/api/groq", // Full URL for Vite proxy
+  apiKey: import.meta.env.VITE_GROQ_API_KEY,
   dangerouslyAllowBrowser: true,
 });
 

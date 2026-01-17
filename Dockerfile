@@ -19,4 +19,8 @@ COPY ./package.json package-lock.json /app/
 COPY --from=production-dependencies-env /app/node_modules /app/node_modules
 COPY --from=build-env /app/build /app/build
 WORKDIR /app
+# Expose port 3000
+EXPOSE 3000
+# Set environment variable for API key (should be provided at runtime)
+ENV VITE_GROQ_API_KEY=""
 CMD ["npm", "run", "start"]

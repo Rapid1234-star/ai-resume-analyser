@@ -19,39 +19,6 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
-    server: {
-      proxy: {
-        "/api/groq": {
-          target: "https://api.groq.com",
-          changeOrigin: true,
-          secure: true,
-          rewrite: (path) => {
-            const newPath = path.replace(/^\/api\/groq/, "");
-            console.log(`🔄 Rewriting: ${path} → ${newPath}`);
-            return newPath;
-          },
-          configure: (proxy, options) => {
-            proxy.on('proxyReq', (proxyReq, req, res) => {
-              console.log(`📤 Proxying ${req.method} ${req.url} → ${proxyReq.path}`);
 
-              if (apiKey) {
-                proxyReq.setHeader('Authorization', `Bearer ${apiKey}`);
-                console.log('🔑 Authorization header set');
-              } else {
-                console.error('❌ No API key available for Authorization header');
-              }
-            });
-
-            proxy.on('proxyRes', (proxyRes, req, res) => {
-              console.log(`📥 Response: ${proxyRes.statusCode} for ${req.url}`);
-            });
-
-            proxy.on('error', (err, req, res) => {
-              console.error('🚨 Proxy error:', err.message);
-            });
-          },
-        },
-      },
-    },
   };
 });
