@@ -2,12 +2,16 @@
 
 **Resumind** is an **AI-powered resume analyzer** that helps job seekers optimize their resumes for specific roles. Upload your resume, provide job details, and receive **ATS compatibility scores**, **smart feedback**, and **actionable improvement suggestions** powered by advanced AI.
 
+🌐 **Live Demo:**
+👉 [https://ai-resume-analyser-jet.vercel.app/](https://ai-resume-analyser-jet.vercel.app/)
+
 ---
 
 ## 📌 Table of Contents
 
 * ✨ Features
 * 🛠️ Tech Stack
+* 🌐 Live Demo
 * 🚀 Getting Started
 
   * 📋 Prerequisites
@@ -56,15 +60,23 @@
 * 📑 **PDF Processing**: PDF.js
 * 💾 **Storage & Auth**: Puter (KV Store, File System)
 * ⚙️ **Build Tool**: Vite
-* 📦 **Deployment**: Docker-ready
+* 📦 **Deployment**: Docker-ready / Vercel
+
+---
+
+## 🌐 Live Demo
+
+You can try the application here:
+
+👉 **[https://ai-resume-analyser-jet.vercel.app/](https://ai-resume-analyser-jet.vercel.app/)**
+
+> ⚠️ Note: You must sign in with a **Puter account** to use the app.
 
 ---
 
 ## 🚀 Getting Started
 
 ### 📋 Prerequisites
-
-Make sure you have the following installed:
 
 * Node.js **v18 or higher**
 * npm or pnpm
@@ -92,7 +104,7 @@ npm install
 npm run dev
 ```
 
-🌐 The app will be available at:
+🌐 Local app runs at:
 `http://localhost:5173`
 
 ---
@@ -101,7 +113,7 @@ npm run dev
 
 Resumind requires a **Groq AI API key** to perform AI-based resume analysis.
 
-An example environment file is already provided as **`.env.example`**.
+An example file is provided as **`.env.example`**.
 
 #### 📄 `.env.example`
 
@@ -113,42 +125,29 @@ VITE_GROQ_API_KEY=your_groq_api_key_here
 
 #### 🛠️ Setup Instructions
 
-1. Copy the example file:
-
 ```bash
 cp .env.example .env
 ```
 
-2. Replace `your_groq_api_key_here` with your actual Groq API key
+Replace the value with your actual Groq API key.
 
 #### 📌 Important Notes
 
 * ⚠️ Never commit your `.env` file
 * ✅ Ensure `.env` is included in `.gitignore`
-* 🔄 Restart the dev server after changing environment variables
-* 🧪 Vite requires all client-side environment variables to be prefixed with `VITE_`
+* 🔄 Restart the dev server after env changes
+* 🧪 Vite requires env variables to be prefixed with `VITE_`
 
 ---
 
 ## 🧑‍💻 Usage
 
-1. 🔐 **Sign In**
-   Log in using your **Puter** account
-
-2. 📄 **Upload Resume**
-   Upload your resume in PDF format
-
+1. 🔐 **Sign In** using your **Puter** account
+2. 📄 **Upload Resume** (PDF format)
 3. 🏢 **Enter Job Details**
-   Provide the company name, job title, and job description
-
-4. 🤖 **Analyze Resume**
-   Click **“Analyse Resume”** to start the AI evaluation
-
-5. 📊 **Review Results**
-   View ATS score, detailed feedback, and improvement suggestions
-
-6. 📁 **Track History**
-   Access all previously analyzed resumes from the home page
+4. 🤖 Click **“Analyse Resume”**
+5. 📊 Review ATS score & feedback
+6. 📁 Track previous analyses on the home page
 
 ---
 
@@ -156,10 +155,10 @@ cp .env.example .env
 
 ### 📜 Available Scripts
 
-* `npm run dev` – Start development server with hot reload
-* `npm run build` – Create production build
+* `npm run dev` – Start dev server
+* `npm run build` – Production build
 * `npm run start` – Start production server
-* `npm run typecheck` – Run TypeScript type checks
+* `npm run typecheck` – TypeScript checks
 
 ---
 
@@ -173,8 +172,8 @@ app/
 └── root.tsx            # Application root
 
 public/                 # Static assets
-types/                  # TypeScript type definitions
-constants/              # App-wide constants
+types/                  # TypeScript definitions
+constants/              # App constants
 ```
 
 ---
@@ -183,38 +182,29 @@ constants/              # App-wide constants
 
 ### 🐳 Docker Deployment
 
-Build and run the app using Docker:
-
 ```bash
-# Build the Docker image
 docker build -t resumind .
-
-# Run the container with your API key
 docker run -p 3000:3000 -e VITE_GROQ_API_KEY=your_actual_api_key_here resumind
 ```
 
-**Important:** Always provide the `VITE_GROQ_API_KEY` environment variable when running the container.
-
 Supported platforms:
 
-* AWS ECS (environment variables in task definition)
-* Google Cloud Run (service configuration)
-* Azure Container Apps (container settings)
+* AWS ECS
+* Google Cloud Run
+* Azure Container Apps
 * Any Docker-compatible platform
 
-🔐 For production deployments, use a **secret management service** to store your API key securely.
+🔐 Use a **secret manager** in production.
 
 ---
 
 ### 🛠️ Manual Deployment
 
-1. **Build the app**
-
 ```bash
 npm run build
 ```
 
-2. **Deploy** the generated `build/` directory to your Node.js hosting provider
+Deploy the `build/` directory to your Node.js hosting provider.
 
 ---
 
