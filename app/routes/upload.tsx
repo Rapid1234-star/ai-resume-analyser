@@ -1,9 +1,10 @@
 import React from "react";
-import Navbar from "~/components/Navbar";
+import ProperNavbar from "~/components/ProperNavbar";
+import AuthGuard from "~/components/AuthGuard";
 import { useState } from "react";
 import FileUploader from "~/components/FileUploader";
 import { usePuterStore } from "~/lib/puter";
-import { useNavigate } from "react-router";
+import { useNavigate, Link } from "react-router";
 import { convertPdfToImage } from "~/lib/pdf2image";
 import { generateUUID } from "~/lib/utils";
 import { prepareInstructions } from "./../../constants/index";
@@ -79,7 +80,7 @@ const upload = () => {
 
     const feedback = await ai.feedback(
       resumeText,
-      prepareInstructions({ jobTitle, jobDescription })
+      prepareInstructions({ jobTitle, jobDescription }),
     );
     if (!feedback) {
       return setStatusText("Error: Failed to analyze resume");
@@ -113,70 +114,121 @@ const upload = () => {
     handleAnalyze({ companyName, jobTitle, jobDescription, file });
   };
   return (
-    <main className="bg-[url('/images/bg-main.svg')] bg-cover">
-      <Navbar />
-      <section className="main-section">
-        <div className="page-heading py-16">
-          <h1>Smart Feedback For Your Dream Job</h1>
-          {isProcessing ? (
-            <>
-              <h2>{statusText}</h2>
-              <img src="/images/resume-scan.gif" className="w-full" />
-            </>
-          ) : (
-            <>
-              <h2>Drop your resume for ATS score and improvement tips</h2>
-            </>
-          )}
-          {!isProcessing && (
-            <form
-              id="upload-form"
-              onSubmit={handleSubmit}
-              className="flex flex-col gap-4 mt-8"
-            >
-              <div className="form-div">
-                <label htmlFor="company-name"> Company Name</label>
-                <input
-                  type="text"
-                  name="company-name"
-                  placeholder="Company Name"
-                  id="company-name"
-                />
-              </div>
-              <div className="form-div">
-                <label htmlFor="job-title"> Job Title</label>
-                <input
-                  type="text"
-                  name="job-title"
-                  placeholder="Job Title"
-                  id="job-title"
-                />
-              </div>
-              <div className="form-div">
-                <label htmlFor="job-description"> Job Description</label>
-                <textarea
-                  rows={5}
-                  name="job-description"
-                  placeholder="Job Description"
-                  id="job-description"
-                />
-              </div>
-              <div className="form-div">
-                <label htmlFor="uploader"> Upload Resume</label>
-                <FileUploader
-                  onFileSelect={handleFileSelect}
-                  selectedFile={file}
-                />
-              </div>
+    <AuthGuard requireAuth={true}>
+      <main className="bg-gradient-to-b from-white via-blue-50/80 to-indigo-50/60 min-h-screen">
+        <ProperNavbar />
+        <section className="w-full max-w-4xl mx-auto px-6 py-16">
+          <div className="bg-white/95 backdrop-blur-xl shadow-2xl rounded-3xl p-12">
+            <div className="text-center mb-10">
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                Smart Feedback For Your Dream Job
+              </h1>
+              {isProcessing ? (
+                <>
+                  <p className="text-lg text-gray-700 mb-6">{statusText}</p>
+                  <div className="flex justify-center">
+                    <img
+                      src="/images/resume-scan.gif"
+                      className="w-full max-w-md"
+                      alt="Processing"
+                    />
+                  </div>
+                </>
+              ) : (
+                <p className="text-lg text-gray-700 mb-6">
+                  Drop your resume for ATS score and improvement tips
+                </p>
+              )}
+            </div>
 
-              <button type="submit" className="primary-button">
-                Analyse Resume
-              </button>
-            </form>
-          )}
-        </div>
-      </section>
-    </main>
+            {!isProcessing && (
+              <form
+                id="upload-form"
+                onSubmit={handleSubmit}
+                className="space-y-8"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="form-div">
+                    <label
+                      htmlFor="company-name"
+                      className="block text-sm font-medium text-gray-700 mb-3"
+                    >
+                      Company Name
+                    </label>
+                    <input
+                      type="text"
+                      name="company-name"
+                      placeholder="Enter company name"
+                      id="company-name"
+                      className="w-full p-5 text-lg inset-shadow rounded-2xl focus:outline-none bg-white border border-gray-200 focus:ring-2 focus:ring-[#4f46e5] focus:border-transparent transition-all duration-200"
+                    />
+                  </div>
+                  <div className="form-div">
+                    <label
+                      htmlFor="job-title"
+                      className="block text-sm font-medium text-gray-700 mb-3"
+                    >
+                      Job Title
+                    </label>
+                    <input
+                      type="text"
+                      name="job-title"
+                      placeholder="Enter job title"
+                      id="job-title"
+                      className="w-full p-5 text-lg inset-shadow rounded-2xl focus:outline-none bg-white border border-gray-200 focus:ring-2 focus:ring-[#4f46e5] focus:border-transparent transition-all duration-200"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-div">
+                  <label
+                    htmlFor="job-description"
+                    className="block text-sm font-medium text-gray-700 mb-3"
+                  >
+                    Job Description
+                  </label>
+                  <textarea
+                    rows={6}
+                    name="job-description"
+                    placeholder="Paste the job description here..."
+                    id="job-description"
+                    className="w-full p-5 text-lg inset-shadow rounded-2xl focus:outline-none bg-white border border-gray-200 focus:ring-2 focus:ring-[#4f46e5] focus:border-transparent transition-all duration-200"
+                  />
+                </div>
+
+                <div className="form-div">
+                  <label
+                    htmlFor="uploader"
+                    className="block text-sm font-medium text-gray-700 mb-3"
+                  >
+                    Upload Resume (PDF)
+                  </label>
+                  <FileUploader
+                    onFileSelect={handleFileSelect}
+                    selectedFile={file}
+                  />
+                </div>
+
+                <div className="flex justify-center pt-4 space-x-4">
+                  <button
+                    type="submit"
+                    className="bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] hover:from-[#4338ca] hover:to-[#6b21a8] text-white font-semibold py-5 px-10 rounded-full text-xl transition-all duration-300 transform hover:scale-105 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1)]"
+                  >
+                    Analyze Resume
+                  </button>
+                  <Link
+                    to="/hero"
+                    className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-semibold py-4 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+                  >
+                    Back to Home
+                  </Link>
+                </div>
+              </form>
+            )}
+          </div>
+        </section>
+      </main>
+    </AuthGuard>
   );
 };
 
