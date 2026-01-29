@@ -18,6 +18,37 @@ interface Particle {
   opacitySpeed: number;
   baseRadius: number;
   currentRadius: number;
+  layer: number;
+  vx: number;
+  vy: number;
+  originalX: number;
+  originalY: number;
+  returnSpeed: number;
+  trail?: boolean;
+  trailLength?: number;
+  age?: number;
+  maxAge?: number;
+}
+
+interface TrailParticle {
+  x: number;
+  y: number;
+  color: string;
+  opacity: number;
+  radius: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+}
+
+interface WaveEffect {
+  x: number;
+  y: number;
+  radius: number;
+  strength: number;
+  maxRadius: number;
+  active: boolean;
 }
 
 interface ParticleCanvasProps {
@@ -28,19 +59,25 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameId = useRef<number | null>(null);
   const dotsRef = useRef<Particle[]>([]);
+  const trailParticlesRef = useRef<TrailParticle[]>([]);
+  const waveEffectsRef = useRef<WaveEffect[]>([]);
   const gridRef = useRef<Record<string, number[]>>({});
   const canvasSizeRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
   const mousePositionRef = useRef<{ x: number | null; y: number | null }>({ x: null, y: null });
+  const lastMousePosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  const DOT_SPACING = 30;
-  const BASE_OPACITY_MIN = 0.3;
-  const BASE_OPACITY_MAX = 0.5;
-  const BASE_RADIUS = 1.5;
-  const INTERACTION_RADIUS = 120;
+  // Enhanced configuration for more noticeable effects
+  const DOT_SPACING = 40;
+  const BASE_OPACITY_MIN = 0.2;
+  const BASE_OPACITY_MAX = 0.4;
+  const BASE_RADIUS = 2;
+  const INTERACTION_RADIUS = 200; // Increased interaction radius
   const INTERACTION_RADIUS_SQ = INTERACTION_RADIUS * INTERACTION_RADIUS;
-  const OPACITY_BOOST = 0.7;
-  const RADIUS_BOOST = 2;
-  const GRID_CELL_SIZE = Math.max(50, Math.floor(INTERACTION_RADIUS / 1.5));
+  const OPACITY_BOOST = 1.2; // Increased opacity boost
+  const RADIUS_BOOST = 6; // Increased radius boost
+  const GRID_CELL_SIZE = Math.max(60, Math.floor(INTERACTION_RADIUS / 1.5));
+  const TRAIL_COUNT = 8; // Number of trail particles per mouse movement
+  const WAVE_COUNT = 3; // Number of wave effects
 
   const handleMouseMove = useCallback((event: MouseEvent) => {
     const canvas = canvasRef.current;
@@ -51,7 +88,70 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
     const rect = canvas.getBoundingClientRect();
     const canvasX = event.clientX - rect.left;
     const canvasY = event.clientY - rect.top;
+    
+    // Create trail particles for mouse movement
+    if (lastMousePosRef.current.x !== 0 && lastMousePosRef.current.y !== 0) {
+      const dx = canvasX - lastMousePosRef.current.x;
+      const dy = canvasY - lastMousePosRef.current.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance > 2) {
+        for (let i = 0; i < TRAIL_COUNT; i++) {
+          const offsetX = (Math.random() - 0.5) * 20;
+          const offsetY = (Math.random() - 0.5) * 20;
+          trailParticlesRef.current.push({
+            x: canvasX + offsetX,
+            y: canvasY + offsetY,
+            color: `rgba(${139 + Math.random() * 40}, ${92 + Math.random() * 40}, ${246 + Math.random() * 20}, 1)`,
+            opacity: 0.8,
+            radius: Math.random() * 2 + 1,
+            vx: (dx / distance) * (Math.random() * 2 + 1),
+            vy: (dy / distance) * (Math.random() * 2 + 1),
+            life: 1.0,
+            maxLife: Math.random() * 30 + 20
+          });
+        }
+      }
+    }
+
+    lastMousePosRef.current = { x: canvasX, y: canvasY };
     mousePositionRef.current = { x: canvasX, y: canvasY };
+  }, []);
+
+  const handleMouseClick = useCallback((event: MouseEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const canvasX = event.clientX - rect.left;
+    const canvasY = event.clientY - rect.top;
+    
+    // Create explosion effect on click
+    for (let i = 0; i < 15; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 4 + 2;
+      trailParticlesRef.current.push({
+        x: canvasX,
+        y: canvasY,
+        color: `rgba(${139 + Math.random() * 60}, ${92 + Math.random() * 60}, ${246 + Math.random() * 40}, 1)`,
+        opacity: 1,
+        radius: Math.random() * 3 + 1,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1.0,
+        maxLife: Math.random() * 80 + 60
+      });
+    }
+
+    // Create wave effect on click
+    waveEffectsRef.current.push({
+      x: canvasX,
+      y: canvasY,
+      radius: 0,
+      strength: 1.0,
+      maxRadius: 300,
+      active: true
+    });
   }, []);
 
   const createDots = useCallback(() => {
@@ -79,15 +179,25 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
         newGrid[cellKey].push(dotIndex);
 
         const baseOpacity = Math.random() * (BASE_OPACITY_MAX - BASE_OPACITY_MIN) + BASE_OPACITY_MIN;
+        const layer = Math.random() < 0.3 ? 1 : 0; // 30% chance for layer 1 (secondary layer)
+
         newDots.push({
           x,
           y,
-          baseColor: `rgba(139, 92, 246, ${BASE_OPACITY_MAX})`,
+          baseColor: layer === 0
+            ? `rgba(139, 92, 246, ${BASE_OPACITY_MAX})` // Purple
+            : `rgba(59, 130, 246, ${BASE_OPACITY_MAX})`, // Blue
           targetOpacity: baseOpacity,
           currentOpacity: baseOpacity,
-          opacitySpeed: (Math.random() * 0.005) + 0.002,
-          baseRadius: BASE_RADIUS,
-          currentRadius: BASE_RADIUS,
+          opacitySpeed: (Math.random() * 0.008) + 0.003, // Faster breathing
+          baseRadius: layer === 0 ? BASE_RADIUS : BASE_RADIUS * 0.8,
+          currentRadius: layer === 0 ? BASE_RADIUS : BASE_RADIUS * 0.8,
+          layer,
+          vx: (Math.random() - 0.5) * 0.2, // Slight movement
+          vy: (Math.random() - 0.5) * 0.2,
+          originalX: x,
+          originalY: y,
+          returnSpeed: (Math.random() * 0.2) + 0.1, // Gentle return speed
         });
       }
     }
@@ -116,6 +226,8 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
     const ctx = canvas?.getContext('2d');
     const dots = dotsRef.current;
     const grid = gridRef.current;
+    const trailParticles = trailParticlesRef.current;
+    const waveEffects = waveEffectsRef.current;
     const { width, height } = canvasSizeRef.current;
     const { x: mouseX, y: mouseY } = mousePositionRef.current;
 
@@ -126,6 +238,43 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
 
     ctx.clearRect(0, 0, width, height);
 
+    // Update and draw trail particles
+    for (let i = trailParticles.length - 1; i >= 0; i--) {
+      const particle = trailParticles[i];
+      particle.x += particle.vx;
+      particle.y += particle.vy;
+      particle.life -= 1 / particle.maxLife;
+      particle.opacity = particle.life;
+      particle.radius *= 0.95;
+
+      if (particle.life <= 0) {
+        trailParticles.splice(i, 1);
+      } else {
+        ctx.beginPath();
+        ctx.fillStyle = particle.color.replace('1)', particle.opacity.toFixed(2) + ')');
+        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Update and draw wave effects
+    for (let i = waveEffects.length - 1; i >= 0; i--) {
+      const wave = waveEffects[i];
+      wave.radius += 3;
+      wave.strength *= 0.95;
+
+      if (wave.radius > wave.maxRadius || wave.strength < 0.1) {
+        waveEffects.splice(i, 1);
+      } else {
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(139, 92, 246, ${wave.strength.toFixed(2)})`;
+        ctx.lineWidth = wave.strength * 2;
+        ctx.arc(wave.x, wave.y, wave.radius, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+
+    // Mouse interaction logic
     const activeDotIndices = new Set<number>();
     if (mouseX !== null && mouseY !== null) {
       const mouseCellX = Math.floor(mouseX / GRID_CELL_SIZE);
@@ -143,7 +292,9 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
       }
     }
 
+    // Draw particles with enhanced interactions
     dots.forEach((dot, index) => {
+      // Update breathing animation
       dot.currentOpacity += dot.opacitySpeed;
       if (dot.currentOpacity >= dot.targetOpacity || dot.currentOpacity <= BASE_OPACITY_MIN) {
         dot.opacitySpeed = -dot.opacitySpeed;
@@ -151,7 +302,16 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
         dot.targetOpacity = Math.random() * (BASE_OPACITY_MAX - BASE_OPACITY_MIN) + BASE_OPACITY_MIN;
       }
 
+      // Update slight movement
+      dot.x += dot.vx;
+      dot.y += dot.vy;
+
+      // Bounce off edges
+      if (dot.x < 0 || dot.x > width) dot.vx *= -1;
+      if (dot.y < 0 || dot.y > height) dot.vy *= -1;
+
       let interactionFactor = 0;
+      let colorShift = 0;
       dot.currentRadius = dot.baseRadius;
 
       if (mouseX !== null && mouseY !== null && activeDotIndices.has(index)) {
@@ -162,15 +322,59 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
         if (distSq < INTERACTION_RADIUS_SQ) {
           const distance = Math.sqrt(distSq);
           interactionFactor = Math.max(0, 1 - distance / INTERACTION_RADIUS);
-          interactionFactor = interactionFactor * interactionFactor;
+          interactionFactor = interactionFactor * interactionFactor * interactionFactor; // Cubic curve for more dramatic effect
+
+          // Enhanced radius boost
+          dot.currentRadius = dot.baseRadius + interactionFactor * RADIUS_BOOST;
+
+          // Color shift based on proximity - shift towards purple
+          colorShift = interactionFactor * 0.8; // Increased intensity for more noticeable purple shift
+
+          // Particle movement away from cursor
+          const angle = Math.atan2(dy, dx);
+          const force = interactionFactor * 0.5;
+          dot.vx += Math.cos(angle) * force;
+          dot.vy += Math.sin(angle) * force;
         }
       }
 
+      // Return to original position when mouse is not interacting
+      if (mouseX === null || mouseY === null || !activeDotIndices.has(index)) {
+        const dx = dot.originalX - dot.x;
+        const dy = dot.originalY - dot.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        // Apply gentle return force if particle is significantly displaced
+        if (distance > 5) {
+          const returnForce = Math.min(distance * 0.02, dot.returnSpeed);
+          dot.vx += (dx / distance) * returnForce;
+          dot.vy += (dy / distance) * returnForce;
+        }
+      }
+
+      // Damping for smooth movement
+      dot.vx *= 0.95;
+      dot.vy *= 0.95;
+
       const finalOpacity = Math.min(1, dot.currentOpacity + interactionFactor * OPACITY_BOOST);
-      dot.currentRadius = dot.baseRadius + interactionFactor * RADIUS_BOOST;
 
       ctx.beginPath();
-      ctx.fillStyle = `rgba(139, 92, 246, ${finalOpacity.toFixed(3)})`;
+      const baseColor = dot.baseColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+      if (baseColor) {
+        const r = parseInt(baseColor[1]);
+        const g = parseInt(baseColor[2]);
+        const b = parseInt(baseColor[3]);
+        // Shift towards purple (139, 92, 246) when interacting
+        const targetR = 139;
+        const targetG = 92;
+        const targetB = 246;
+        const finalR = Math.round(r + (targetR - r) * colorShift);
+        const finalG = Math.round(g + (targetG - g) * colorShift);
+        const finalB = Math.round(b + (targetB - b) * colorShift);
+        ctx.fillStyle = `rgba(${finalR}, ${finalG}, ${finalB}, ${finalOpacity.toFixed(3)})`;
+      } else {
+        ctx.fillStyle = `rgba(139, 92, 246, ${finalOpacity.toFixed(3)})`;
+      }
       ctx.arc(dot.x, dot.y, dot.currentRadius, 0, Math.PI * 2);
       ctx.fill();
     });
@@ -182,9 +386,27 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
     handleResize();
     const handleMouseLeave = () => {
       mousePositionRef.current = { x: null, y: null };
+      // Create explosion effect on mouse leave
+      const canvas = canvasRef.current;
+      if (canvas && lastMousePosRef.current.x !== 0) {
+        for (let i = 0; i < 20; i++) {
+          trailParticlesRef.current.push({
+            x: lastMousePosRef.current.x,
+            y: lastMousePosRef.current.y,
+            color: `rgba(${139 + Math.random() * 40}, ${92 + Math.random() * 40}, ${246 + Math.random() * 20}, 1)`,
+            opacity: 1,
+            radius: Math.random() * 3 + 1,
+            vx: (Math.random() - 0.5) * 5,
+            vy: (Math.random() - 0.5) * 5,
+            life: 1.0,
+            maxLife: Math.random() * 60 + 40
+          });
+        }
+      }
     };
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    window.addEventListener('mousedown', handleMouseClick);
     window.addEventListener('resize', handleResize);
     document.documentElement.addEventListener('mouseleave', handleMouseLeave);
 
@@ -193,6 +415,7 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mousedown', handleMouseClick);
       document.documentElement.removeEventListener('mouseleave', handleMouseLeave);
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
