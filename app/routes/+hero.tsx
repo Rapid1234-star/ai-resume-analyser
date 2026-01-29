@@ -1,12 +1,12 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import { motion } from "framer-motion";
 import { usePuterStore } from "~/lib/puter";
 import { useNavigate, useLocation } from "react-router";
 import ProperNavbar from "~/components/ProperNavbar";
 import AuthGuard from "~/components/AuthGuard";
 
 function cn(...classes: (string | undefined | null | boolean)[]): string {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 }
 
 interface Particle {
@@ -55,15 +55,21 @@ interface ParticleCanvasProps {
   className?: string;
 }
 
-const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
+const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = "" }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameId = useRef<number | null>(null);
   const dotsRef = useRef<Particle[]>([]);
   const trailParticlesRef = useRef<TrailParticle[]>([]);
   const waveEffectsRef = useRef<WaveEffect[]>([]);
   const gridRef = useRef<Record<string, number[]>>({});
-  const canvasSizeRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
-  const mousePositionRef = useRef<{ x: number | null; y: number | null }>({ x: null, y: null });
+  const canvasSizeRef = useRef<{ width: number; height: number }>({
+    width: 0,
+    height: 0,
+  });
+  const mousePositionRef = useRef<{ x: number | null; y: number | null }>({
+    x: null,
+    y: null,
+  });
   const lastMousePosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
   // Enhanced configuration for more noticeable effects
@@ -88,7 +94,7 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
     const rect = canvas.getBoundingClientRect();
     const canvasX = event.clientX - rect.left;
     const canvasY = event.clientY - rect.top;
-    
+
     // Create trail particles for mouse movement
     if (lastMousePosRef.current.x !== 0 && lastMousePosRef.current.y !== 0) {
       const dx = canvasX - lastMousePosRef.current.x;
@@ -108,7 +114,7 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
             vx: (dx / distance) * (Math.random() * 2 + 1),
             vy: (dy / distance) * (Math.random() * 2 + 1),
             life: 1.0,
-            maxLife: Math.random() * 30 + 20
+            maxLife: Math.random() * 30 + 20,
           });
         }
       }
@@ -121,11 +127,11 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
   const handleMouseClick = useCallback((event: MouseEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
+
     const rect = canvas.getBoundingClientRect();
     const canvasX = event.clientX - rect.left;
     const canvasY = event.clientY - rect.top;
-    
+
     // Create explosion effect on click
     for (let i = 0; i < 15; i++) {
       const angle = Math.random() * Math.PI * 2;
@@ -139,7 +145,7 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
         life: 1.0,
-        maxLife: Math.random() * 80 + 60
+        maxLife: Math.random() * 80 + 60,
       });
     }
 
@@ -150,7 +156,7 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
       radius: 0,
       strength: 1.0,
       maxRadius: 300,
-      active: true
+      active: true,
     });
   }, []);
 
@@ -178,18 +184,21 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
         const dotIndex = newDots.length;
         newGrid[cellKey].push(dotIndex);
 
-        const baseOpacity = Math.random() * (BASE_OPACITY_MAX - BASE_OPACITY_MIN) + BASE_OPACITY_MIN;
+        const baseOpacity =
+          Math.random() * (BASE_OPACITY_MAX - BASE_OPACITY_MIN) +
+          BASE_OPACITY_MIN;
         const layer = Math.random() < 0.3 ? 1 : 0; // 30% chance for layer 1 (secondary layer)
 
         newDots.push({
           x,
           y,
-          baseColor: layer === 0
-            ? `rgba(139, 92, 246, ${BASE_OPACITY_MAX})` // Purple
-            : `rgba(59, 130, 246, ${BASE_OPACITY_MAX})`, // Blue
+          baseColor:
+            layer === 0
+              ? `rgba(139, 92, 246, ${BASE_OPACITY_MAX})` // Purple
+              : `rgba(59, 130, 246, ${BASE_OPACITY_MAX})`, // Blue
           targetOpacity: baseOpacity,
           currentOpacity: baseOpacity,
-          opacitySpeed: (Math.random() * 0.008) + 0.003, // Faster breathing
+          opacitySpeed: Math.random() * 0.008 + 0.003, // Faster breathing
           baseRadius: layer === 0 ? BASE_RADIUS : BASE_RADIUS * 0.8,
           currentRadius: layer === 0 ? BASE_RADIUS : BASE_RADIUS * 0.8,
           layer,
@@ -197,13 +206,19 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
           vy: (Math.random() - 0.5) * 0.2,
           originalX: x,
           originalY: y,
-          returnSpeed: (Math.random() * 0.2) + 0.1, // Gentle return speed
+          returnSpeed: Math.random() * 0.2 + 0.1, // Gentle return speed
         });
       }
     }
     dotsRef.current = newDots;
     gridRef.current = newGrid;
-  }, [DOT_SPACING, GRID_CELL_SIZE, BASE_OPACITY_MIN, BASE_OPACITY_MAX, BASE_RADIUS]);
+  }, [
+    DOT_SPACING,
+    GRID_CELL_SIZE,
+    BASE_OPACITY_MIN,
+    BASE_OPACITY_MAX,
+    BASE_RADIUS,
+  ]);
 
   const handleResize = useCallback(() => {
     const canvas = canvasRef.current;
@@ -212,8 +227,12 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
     const width = container ? container.clientWidth : window.innerWidth;
     const height = container ? container.clientHeight : window.innerHeight;
 
-    if (canvas.width !== width || canvas.height !== height ||
-      canvasSizeRef.current.width !== width || canvasSizeRef.current.height !== height) {
+    if (
+      canvas.width !== width ||
+      canvas.height !== height ||
+      canvasSizeRef.current.width !== width ||
+      canvasSizeRef.current.height !== height
+    ) {
       canvas.width = width;
       canvas.height = height;
       canvasSizeRef.current = { width, height };
@@ -223,7 +242,7 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
 
   const animateDots = useCallback(() => {
     const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
+    const ctx = canvas?.getContext("2d");
     const dots = dotsRef.current;
     const grid = gridRef.current;
     const trailParticles = trailParticlesRef.current;
@@ -251,7 +270,10 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
         trailParticles.splice(i, 1);
       } else {
         ctx.beginPath();
-        ctx.fillStyle = particle.color.replace('1)', particle.opacity.toFixed(2) + ')');
+        ctx.fillStyle = particle.color.replace(
+          "1)",
+          particle.opacity.toFixed(2) + ")",
+        );
         ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
         ctx.fill();
       }
@@ -286,7 +308,7 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
           const checkCellY = mouseCellY + j;
           const cellKey = `${checkCellX}_${checkCellY}`;
           if (grid[cellKey]) {
-            grid[cellKey].forEach(dotIndex => activeDotIndices.add(dotIndex));
+            grid[cellKey].forEach((dotIndex) => activeDotIndices.add(dotIndex));
           }
         }
       }
@@ -296,10 +318,18 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
     dots.forEach((dot, index) => {
       // Update breathing animation
       dot.currentOpacity += dot.opacitySpeed;
-      if (dot.currentOpacity >= dot.targetOpacity || dot.currentOpacity <= BASE_OPACITY_MIN) {
+      if (
+        dot.currentOpacity >= dot.targetOpacity ||
+        dot.currentOpacity <= BASE_OPACITY_MIN
+      ) {
         dot.opacitySpeed = -dot.opacitySpeed;
-        dot.currentOpacity = Math.max(BASE_OPACITY_MIN, Math.min(dot.currentOpacity, BASE_OPACITY_MAX));
-        dot.targetOpacity = Math.random() * (BASE_OPACITY_MAX - BASE_OPACITY_MIN) + BASE_OPACITY_MIN;
+        dot.currentOpacity = Math.max(
+          BASE_OPACITY_MIN,
+          Math.min(dot.currentOpacity, BASE_OPACITY_MAX),
+        );
+        dot.targetOpacity =
+          Math.random() * (BASE_OPACITY_MAX - BASE_OPACITY_MIN) +
+          BASE_OPACITY_MIN;
       }
 
       // Update slight movement
@@ -322,7 +352,8 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
         if (distSq < INTERACTION_RADIUS_SQ) {
           const distance = Math.sqrt(distSq);
           interactionFactor = Math.max(0, 1 - distance / INTERACTION_RADIUS);
-          interactionFactor = interactionFactor * interactionFactor * interactionFactor; // Cubic curve for more dramatic effect
+          interactionFactor =
+            interactionFactor * interactionFactor * interactionFactor; // Cubic curve for more dramatic effect
 
           // Enhanced radius boost
           dot.currentRadius = dot.baseRadius + interactionFactor * RADIUS_BOOST;
@@ -356,7 +387,10 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
       dot.vx *= 0.95;
       dot.vy *= 0.95;
 
-      const finalOpacity = Math.min(1, dot.currentOpacity + interactionFactor * OPACITY_BOOST);
+      const finalOpacity = Math.min(
+        1,
+        dot.currentOpacity + interactionFactor * OPACITY_BOOST,
+      );
 
       ctx.beginPath();
       const baseColor = dot.baseColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
@@ -380,7 +414,15 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
     });
 
     animationFrameId.current = requestAnimationFrame(animateDots);
-  }, [GRID_CELL_SIZE, INTERACTION_RADIUS, INTERACTION_RADIUS_SQ, OPACITY_BOOST, RADIUS_BOOST, BASE_OPACITY_MIN, BASE_OPACITY_MAX]);
+  }, [
+    GRID_CELL_SIZE,
+    INTERACTION_RADIUS,
+    INTERACTION_RADIUS_SQ,
+    OPACITY_BOOST,
+    RADIUS_BOOST,
+    BASE_OPACITY_MIN,
+    BASE_OPACITY_MAX,
+  ]);
 
   useEffect(() => {
     handleResize();
@@ -399,31 +441,39 @@ const ParticleCanvas: React.FC<ParticleCanvasProps> = ({ className = '' }) => {
             vx: (Math.random() - 0.5) * 5,
             vy: (Math.random() - 0.5) * 5,
             life: 1.0,
-            maxLife: Math.random() * 60 + 40
+            maxLife: Math.random() * 60 + 40,
           });
         }
       }
     };
 
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    window.addEventListener('mousedown', handleMouseClick);
-    window.addEventListener('resize', handleResize);
-    document.documentElement.addEventListener('mouseleave', handleMouseLeave);
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    window.addEventListener("mousedown", handleMouseClick);
+    window.addEventListener("resize", handleResize);
+    document.documentElement.addEventListener("mouseleave", handleMouseLeave);
 
     animationFrameId.current = requestAnimationFrame(animateDots);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mousedown', handleMouseClick);
-      document.documentElement.removeEventListener('mouseleave', handleMouseLeave);
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mousedown", handleMouseClick);
+      document.documentElement.removeEventListener(
+        "mouseleave",
+        handleMouseLeave,
+      );
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
       }
     };
   }, [handleResize, handleMouseMove, animateDots]);
 
-  return <canvas ref={canvasRef} className={cn('absolute inset-0 z-0 pointer-events-none', className)} />;
+  return (
+    <canvas
+      ref={canvasRef}
+      className={cn("absolute inset-0 z-0 pointer-events-none", className)}
+    />
+  );
 };
 
 interface TypingTextProps {
@@ -431,15 +481,15 @@ interface TypingTextProps {
   className?: string;
 }
 
-const TypingText: React.FC<TypingTextProps> = ({ text, className = '' }) => {
-  const [displayedText, setDisplayedText] = useState('');
+const TypingText: React.FC<TypingTextProps> = ({ text, className = "" }) => {
+  const [displayedText, setDisplayedText] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     if (currentIndex < text.length) {
       const timeout = setTimeout(() => {
-        setDisplayedText(prev => prev + text[currentIndex]);
-        setCurrentIndex(prev => prev + 1);
+        setDisplayedText((prev) => prev + text[currentIndex]);
+        setCurrentIndex((prev) => prev + 1);
       }, 80);
       return () => clearTimeout(timeout);
     }
@@ -457,12 +507,19 @@ interface GlowButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> 
   children: React.ReactNode;
 }
 
-const GlowButton: React.FC<GlowButtonProps> = ({ children, className = '', ...props }) => {
+const GlowButton: React.FC<GlowButtonProps> = ({
+  children,
+  className = "",
+  ...props
+}) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
     <button
-      className={cn('relative px-8 py-4 rounded-lg text-lg font-semibold text-white cursor-pointer', className)}
+      className={cn(
+        "relative px-8 py-4 rounded-lg text-lg font-semibold text-white cursor-pointer",
+        className,
+      )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       {...props}
@@ -470,14 +527,14 @@ const GlowButton: React.FC<GlowButtonProps> = ({ children, className = '', ...pr
       <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 rounded-lg" />
       <div
         className={cn(
-          'absolute inset-0.5 bg-gray-900 rounded-md transition-opacity duration-500',
-          isHovered ? 'opacity-70' : 'opacity-100'
+          "absolute inset-0.5 bg-gray-900 rounded-md transition-opacity duration-500",
+          isHovered ? "opacity-70" : "opacity-100",
         )}
       />
       <div
         className={cn(
-          'absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 rounded-lg blur-xl transition-opacity duration-500',
-          isHovered ? 'opacity-100' : 'opacity-0'
+          "absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 rounded-lg blur-xl transition-opacity duration-500",
+          isHovered ? "opacity-100" : "opacity-0",
         )}
       />
       <span className="relative z-10">{children}</span>
@@ -492,32 +549,32 @@ const HeroLandingPage: React.FC = () => {
 
   const handleGetStarted = () => {
     if (auth.isAuthenticated) {
-      navigate('/dashboard');
+      navigate("/dashboard");
     } else {
-      navigate('/auth?next=/dashboard');
+      navigate("/auth?next=/dashboard");
     }
   };
 
   const handleDashboardClick = () => {
     if (auth.isAuthenticated) {
-      navigate('/dashboard');
+      navigate("/dashboard");
     } else {
-      navigate('/auth?next=/dashboard');
+      navigate("/auth?next=/dashboard");
     }
   };
 
   const handleUploadClick = () => {
     if (auth.isAuthenticated) {
-      navigate('/upload');
+      navigate("/upload");
     } else {
-      navigate('/auth?next=/upload');
+      navigate("/auth?next=/upload");
     }
   };
 
   const handleLogout = async () => {
     try {
       await auth.signOut();
-      navigate('/', { replace: true });
+      navigate("/", { replace: true });
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -530,7 +587,7 @@ const HeroLandingPage: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-white via-blue-50/80 to-indigo-50/60" />
         <div className="absolute inset-0 bg-gradient-to-r from-violet-200/30 via-indigo-200/20 to-blue-200/30 rounded-full blur-3xl scale-150" />
         <ParticleCanvas />
-        
+
         {/* Enhanced navbar for hero page */}
         <nav className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-xl border-b border-gray-100 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -538,7 +595,7 @@ const HeroLandingPage: React.FC = () => {
               {/* Logo */}
               <div className="flex items-center">
                 <button
-                  onClick={() => navigate('/hero')}
+                  onClick={() => navigate("/hero")}
                   className="flex-shrink-0"
                 >
                   <span className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
@@ -570,7 +627,7 @@ const HeroLandingPage: React.FC = () => {
                   </button>
                 ) : (
                   <button
-                    onClick={() => navigate('/auth')}
+                    onClick={() => navigate("/auth")}
                     className="text-gray-700 hover:text-indigo-600 font-medium transition-colors duration-200"
                   >
                     Login
@@ -582,7 +639,11 @@ const HeroLandingPage: React.FC = () => {
               {auth.isAuthenticated && (
                 <div className="hidden md:flex items-center">
                   <span className="text-sm text-gray-500">
-                    {auth.user ? (auth.user as any).email || (auth.user as any).name || 'User' : 'User'}
+                    {auth.user
+                      ? (auth.user as any).email ||
+                        (auth.user as any).name ||
+                        "User"
+                      : "User"}
                   </span>
                 </div>
               )}
@@ -591,9 +652,9 @@ const HeroLandingPage: React.FC = () => {
               <div className="flex items-center md:hidden">
                 <button
                   onClick={() => {
-                    const mobileMenu = document.getElementById('mobile-menu');
+                    const mobileMenu = document.getElementById("mobile-menu");
                     if (mobileMenu) {
-                      mobileMenu.classList.toggle('hidden');
+                      mobileMenu.classList.toggle("hidden");
                     }
                   }}
                   className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-indigo-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
@@ -609,7 +670,11 @@ const HeroLandingPage: React.FC = () => {
                     stroke="currentColor"
                     aria-hidden="true"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
                   </svg>
                 </button>
               </div>
@@ -640,7 +705,7 @@ const HeroLandingPage: React.FC = () => {
                 </button>
               ) : (
                 <button
-                  onClick={() => navigate('/auth')}
+                  onClick={() => navigate("/auth")}
                   className="block w-full text-left pl-3 pr-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
                 >
                   Login
@@ -649,14 +714,17 @@ const HeroLandingPage: React.FC = () => {
             </div>
           </div>
         </nav>
-        
+
         <div className="relative z-10 text-center px-6 max-w-4xl">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6"
-            style={{ filter: 'drop-shadow(0 10px 8px rgb(0 0 0 / 0.04)) drop-shadow(0 4px 3px rgb(0 0 0 / 0.1))' }}
+            style={{
+              filter:
+                "drop-shadow(0 10px 8px rgb(0 0 0 / 0.04)) drop-shadow(0 4px 3px rgb(0 0 0 / 0.1))",
+            }}
           >
             <TypingText text="Smart Feedback For Your Dream Job" />
           </motion.h1>
@@ -667,7 +735,8 @@ const HeroLandingPage: React.FC = () => {
             transition={{ duration: 0.8, delay: 1.5 }}
             className="text-lg md:text-xl text-gray-700 mb-8 max-w-2xl mx-auto"
           >
-            Get personalized insights and improve your chances of landing your dream position
+            Get personalized insights and improve your chances of landing your
+            dream position
           </motion.p>
 
           <motion.div
@@ -675,9 +744,7 @@ const HeroLandingPage: React.FC = () => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 2 }}
           >
-            <GlowButton onClick={handleGetStarted}>
-              Get Started
-            </GlowButton>
+            <GlowButton onClick={handleGetStarted}>Get Started</GlowButton>
           </motion.div>
         </div>
       </div>
